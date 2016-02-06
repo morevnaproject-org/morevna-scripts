@@ -21,8 +21,8 @@
 
 bl_info = {
     "name": "LipSync Importer & Blinker",
-    "author": "Yousef Harfoush - bat3a ;) / Konstantin Dmitriev",
-    "version": (0, 5, 2),
+    "author": "Yousef Harfoush - bat3a ;) / Konstantin Dmitriev / fixed for 2.76x by Looch", 
+    "version": (0, 5, 3),
     "blender": (2, 70, 0),
     "location": "3D window > Tool Shelf",
     "description": "Plot Moho (Papagayo, Jlipsync, Yolo) file to frames and adds automatic blinking. Modified by Konstantin Dmitriev for Morevna Project to support Pose Libraries and CG Cookie Flex Rig",
@@ -552,7 +552,7 @@ class LipSyncBoneUI(bpy.types.Panel):
 # drawing the user interface
 class LipSyncUI(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
-    bl_region_type = "TOOL_PROPS"
+    bl_region_type = "TOOLS"
     bl_label = "LipSync Importer & Blinker"
 
     newType= bpy.types.Scene
