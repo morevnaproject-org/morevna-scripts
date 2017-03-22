@@ -1,7 +1,7 @@
 #===========  MODIFY PARAMETERS HERE =================
 
-oldpath="//render/out-"
-newpath="//video/out-"
+oldpath="//sound/track-1-cosh-man.wav"
+newpath="//render/sound/voice-raw-1-cosh-man.flac.wav"
 
 #=====================================================
 
@@ -11,7 +11,12 @@ def do_replace(oldpath, newpath):
     seq=bpy.data.scenes[0].sequence_editor.sequences_all
 
     for i in seq:
-        if i.type == 'SOUND' or i.type == 'MOVIE':
+        if i.type == 'SOUND':
+            if oldpath in i.sound.filepath:
+                p = i.sound.filepath.replace(oldpath, newpath)
+                print("Replacing %s to %s ..." % (i.sound.filepath, p))
+                i.sound.filepath=p
+        if i.type == 'MOVIE':
             if oldpath in i.filepath:
                 p = i.filepath.replace(oldpath, newpath)
                 print("Replacing %s to %s ..." % (i.filepath, p))
