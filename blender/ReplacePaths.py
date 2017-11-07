@@ -8,7 +8,7 @@ newpath="//render/sound/voice-raw-1-cosh-man.flac.wav"
 import bpy
 
 def do_replace(oldpath, newpath):
-    seq=bpy.data.scenes[0].sequence_editor.sequences_all
+    seq=bpy.context.scene.sequence_editor.sequences_all
 
     for i in seq:
         _replace(i, oldpath, newpath)

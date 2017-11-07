@@ -6,7 +6,7 @@ search_string="2016-07-25-rea-mix"
 
 import bpy
 
-seq=bpy.data.scenes[0].sequence_editor.sequences_all
+seq=bpy.context.scene.sequence_editor.sequences_all
 for i in seq:
     #print(i.type)
     if i.type == 'SOUND':
