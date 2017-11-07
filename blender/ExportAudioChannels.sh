@@ -6,6 +6,8 @@ OUTPUT="${BLENDFILE}-tracks"
 
 CHANNELS=""
 
+set -e
+
 if [ -z $2 ]; then
 	echo "Please specify at least one track!"
 	exit 1
@@ -44,11 +46,31 @@ if [ ! -z $8 ]; then
 	OUTPUT="${OUTPUT}-$8"
 fi
 
-OUTPUT="${OUTPUT}.flac"
+if [ ! -z $9 ]; then
+	CHANNELS="${CHANNELS},$9"
+	OUTPUT="${OUTPUT}-$9"
+fi
+
+if [ ! -z ${10} ]; then
+	CHANNELS="${CHANNELS},${10}"
+	OUTPUT="${OUTPUT}-${10}"
+fi
+
+if [ ! -z ${11} ]; then
+	CHANNELS="${CHANNELS},${11}"
+	OUTPUT="${OUTPUT}-${11}"
+fi
+
+if [ ! -z ${12} ]; then
+	CHANNELS="${CHANNELS},${12}"
+	OUTPUT="${OUTPUT}-${12}"
+fi
+
 USER=`whoami`
 TMPNAME="/tmp/BlenderExportAudio-$USER-$RANDOM"
 SCRIPTFILE="${TMPNAME}.py"
-WAVFILE="${TMPNAME}.wav"
+WAVFILE="${OUTPUT}.wav"
+FLACFILE="${OUTPUT}.flac"
 
 
 cat > ${SCRIPTFILE} <<EOF
@@ -58,17 +80,20 @@ output="${WAVFILE}"
 
 import bpy
 
-seq=bpy.data.scenes[0].sequence_editor.sequences_all
+seq=bpy.context.scene.sequence_editor.sequences_all
 for i in seq:
 	if not i.channel in channels:
 		i.mute=True
 
-bpy.ops.sound.mixdown(filepath=output, container='WAV', codec='PCM')
+bpy.ops.sound.mixdown(filepath=output, container='WAV', codec='PCM', format='F32', accuracy=512)
 EOF
 
 blender -b "$BLENDFILE" -P "$SCRIPTFILE"
-flac --best -f  -o "${OUTPUT}" "${WAVFILE}" 
 
-rm -rf "${WAVFILE}"
+# flac encoding
+sox "${WAVFILE}" -b24 "${TMPNAME}.wav"
+flac --best -f  -o "${FLACFILE}" "${TMPNAME}.wav" 
+
+rm -rf "${TMPNAME}.wav"
 rm -rf "${SCRIPTFILE}"
 
