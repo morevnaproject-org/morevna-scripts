@@ -5,8 +5,11 @@ if [ -z "$1" ]; then
 	exit 1
 fi
 
-SUFFIX="-lossless.avi"
-BASENAME=${1%"$SUFFIX"}
+SUFFIX="-lossless"
+BASENAME="$1"
+BASENAME=${BASENAME%".mp4"}
+BASENAME=${BASENAME%".avi"}
+BASENAME=${BASENAME%"$SUFFIX"}
 
 rm -f ffmpeg2pass-0.log* || true
 #OPTIONS="-c:v libvpx -b:v 2M -c:a libvorbis"
@@ -14,5 +17,5 @@ rm -f ffmpeg2pass-0.log* || true
 #ffmpeg -y -i "${BASENAME}-lossless.avi" ${OPTIONS} $2 -pass 2 "${BASENAME}.webm"
 
 OPTIONS="-c:v libvpx-vp9 -pix_fmt yuv420p -tile-columns 2 -row-mt 1 -tile-rows 1 -threads 8 -b:v 2000k -minrate 1800k -maxrate 2800k -quality good"
-ffmpeg -y -i "${BASENAME}-lossless.avi" ${OPTIONS} -an  $2 -pass 1 -f webm /dev/null
-ffmpeg -y -i "${BASENAME}-lossless.avi" ${OPTIONS} -speed 2 -c:a libopus $2 -pass 2 "${BASENAME}.webm"
+ffmpeg -y -i "$1" ${OPTIONS} -an  $2 -pass 1 -f webm /dev/null
+ffmpeg -y -i "$1" ${OPTIONS} -speed 2 -c:a libopus $2 -pass 2 "${BASENAME}.webm"
