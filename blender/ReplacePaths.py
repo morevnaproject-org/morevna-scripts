@@ -35,6 +35,11 @@ def _replace(i, oldpath, newpath):
                 p = j.filename.replace(oldpath, newpath)
                 print("Replacing %s to %s ..." % (j.filename, p))
                 j.filename=p
+    if i.type == 'TEXT':
+        if oldpath in i.font.filepath:
+            p = i.font.filepath.replace(oldpath, newpath)
+            print("Replacing %s to %s ..." % (i.font.filepath, p))
+            i.font.filepath=p
     if i.type=='META':
         for j in i.sequences:
             _replace(j, oldpath, newpath)
