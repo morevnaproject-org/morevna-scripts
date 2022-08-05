@@ -33,7 +33,7 @@ fi
 
 DIR="$1"
 PROJECT=`basename "$DIR"`
-STORAGE="/home/data/archive.morevna/"
+STORAGE="/home/data/archive.morevna/animation-sources"
 GITDIR="$STORAGE/$PROJECT"
 
 cd "$DIR"
@@ -41,6 +41,7 @@ DIR=`pwd`
 
 if [ "$DIR" == "$GITDIR" ]; then
 	echo "ERROR: Can't use directory, which belongs to project storage."
+	exit 1
 fi
 
 
@@ -50,6 +51,7 @@ if [ ! -d "$GITDIR" ]; then
 	cd "$GITDIR"
 	if ! ( git rev-parse HEAD >/dev/null 2>&1 ); then
 		git checkout -b main
+	else
 		git branch --set-upstream-to=origin/main main
 	fi
 	git lfs install
@@ -83,13 +85,6 @@ if [ ! -f "$DIR/LICENSE" ] && [ ! -f "$GITDIR/LICENSE" ]; then
 		esac
 	done
 fi
-# Файл README
-if [ ! -f "$DIR/README.md" ] && [ ! -f "$GITDIR/README.md" ]; then
-	echo
-	echo "ERROR: No README.md file found!"
-	echo "You can use this one and adapt accordingly - https://gitlab.com/OpenSourceAnimation/pepper-and-carrot-ep13/-/blob/main/README.md"
-	exit 1
-fi
 # CREDITS.txt
 if [ ! -f "$DIR/CREDITS.txt" ] && [ ! -f "$GITDIR/CREDITS.txt" ]; then
 	touch "$DIR/CREDITS.txt"
@@ -99,11 +94,19 @@ if [ ! -f "$DIR/CONTRIBUTING.md" ] && [ ! -f "$GITDIR/CONTRIBUTING.md" ]; then
 	cat <<EOT > "$DIR/CONTRIBUTING.md"
 Contributions to this repository are accepted via GitLab's PRs - https://gitlab.com/OpenSourceAnimation/$PROJECT/
 
-If you wish your name to appear in the credits, please make sure to edit `CREDITS.txt` file as part of your PR (see "Community contributions" section at the end).
+If you wish your name to appear in the credits, please make sure to edit "CREDITS.txt" file as part of your PR (see "Community contributions" section at the end).
 
-If you will not edit `CREDITS.txt` file as part of your PR, then we will assume that you providing your contribution under CC-0 license and your name will not be attributed in final credits.
+If you will not edit "CREDITS.txt" file as part of your PR, then we will assume that you providing your contribution under CC-0 license and your name will not be attributed in final credits.
 EOT
 fi
+# Файл README
+if [ ! -f "$DIR/README.md" ] && [ ! -f "$GITDIR/README.md" ]; then
+	echo
+	echo "ERROR: No README.md file found!"
+	echo "You can use this one and adapt accordingly - https://gitlab.com/OpenSourceAnimation/pepper-and-carrot-ep13/-/blob/main/README.md"
+	exit 1
+fi
+
 # Файл pack.lst
 if [ ! -f "$DIR/pack.lst" ] && [ ! -f "$GITDIR/pack.lst" ]; then
 	touch "$DIR/pack.lst"
@@ -114,6 +117,7 @@ for F in CREDITS.txt CONTRIBUTING.md LICENSE README.md packages.txt; do
 			echo "$F" >> "$DIR/pack.lst"
 		fi
 	fi
+done
 # .gitignore
 if [ ! -f "$DIR/.gitignore" ] && [ ! -f "$GITDIR/.gitignore" ]; then
 cat <<EOT > "$DIR/.gitignore"
@@ -152,11 +156,13 @@ cat <<EOT > "$DIR/.gitattributes"
 EOT
 fi
 
-cat <<EOT > /home/.unison/sync-${PROJECT}.git
+cat <<EOT > $HOME/.unison/sync-${PROJECT}.git
 # Unison preferences
 label = archive.morevnaproject.org
 root = $DIR
 root = $GITDIR
+
+perms=0
 
 ignore = Name {.git}
 ignore = Name {nosync}
@@ -184,20 +190,23 @@ unison-gtk sync-${PROJECT}.git
 
 cd $GITDIR
 
-if ( git status -s | grep " .gitignore$" ); then
-	git add .gitignore
-	git commit -m "Update .gitignore"
-fi
-if ( git status -s | grep " .gitattributes$" ); then
-	git add .gitattributes
-	git commit -m "Update .gitattributes"
-fi
+for F in .gitignore .gitattributes CREDITS.txt CONTRIBUTING.md LICENSE README.md pack.lst; do
+	if ( git status -s | grep " ${F}$" ); then
+		git add ${F}
+		git commit -m "Update ${F}"
+	fi
+done
 
+exit 0
+A=`git status -s -u | head -30`
+while [ ! -z $A]
+for LINE in `git status -s -u | head -30`; do
 # Цикл - коммит 10 файлов - push
 git add .
 git commit -m "Update files"
 BRANCH=`git symbolic-ref --short HEAD`
-git push origin $BRANCH
+#git push origin $BRANCH
+echo BRANCH=$BRANCH
 
 exit 0
 
