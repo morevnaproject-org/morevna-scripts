@@ -197,37 +197,29 @@ for F in .gitignore .gitattributes CREDITS.txt CONTRIBUTING.md LICENSE README.md
 	fi
 done
 
-exit 0
-A=`git status -s -u | head -30`
-while [ ! -z $A]
-for LINE in `git status -s -u | head -30`; do
-# Цикл - коммит 10 файлов - push
-git add .
-git commit -m "Update files"
-BRANCH=`git symbolic-ref --short HEAD`
-#git push origin $BRANCH
-echo BRANCH=$BRANCH
+export BRANCH=`git symbolic-ref --short HEAD`
+export A=`git status -s -u | head -30`
+export SIZE=0
+export SIZE_LIMIT=50000000 # ~50M
+#echo BRANCH=$BRANCH
+while [ ! -z "$A" ]; do
+	while IFS= read -r line; do
+		FILENAME="${line:3}"
+		git add "$FILENAME"
+		FILESIZE=$(stat -c%s "$FILENAME")
+		SIZE=`expr $SIZE + $FILESIZE`
+		if [ $SIZE -gt $SIZE_LIMIT ]; then
+			SIZE=0
+			break
+		fi
+	done <<< "$A"
+	git commit -m "Update files"
+	git push origin $BRANCH
+	#if [ `git rev-list --count HEAD` -gt 10 ]; then
+	#	exit 0
+	#fi
+	#echo "----"
+	A=`git status -s -u | head -30`
+done
 
 exit 0
-
-#===============================================================
-# Добавить remote
-if ! ( cat .git/config | grep "remote \"origin\"" >/dev/null 2>&1 ); then
-	git remote add origin git@gitlab.com:OpenSourceAnimation/$PROJECT.git
-fi
-
-# fetch & check new commits
-COMMIT=""
-if ( git rev-parse HEAD >/dev/null 2>&1 ); then
-	COMMIT=`git rev-parse HEAD`
-fi
-git fetch
-if [ ! -z $COMMIT ]; then
-	COMMIT_NEW=`git rev-parse HEAD`
-	if [ $COMMIT_NEW != $COMMIT ]; then
-		echo "ATTENTION! There are new commits in remote repo!"
-		echo "Please examine the situation manually and make sure to sync your local files with remote tree."
-		echo
-		exit 1
-	fi
-fi
