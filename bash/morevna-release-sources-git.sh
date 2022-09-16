@@ -221,6 +221,7 @@ while [ ! -z "$A" ]; do
 	#fi
 	#echo "----"
 	A=`git status -s -u | head -30`
+	sleep 10
 done
 
 exit 0
