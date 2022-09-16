@@ -197,6 +197,7 @@ for F in .gitignore .gitattributes CREDITS.txt CONTRIBUTING.md LICENSE README.md
 	fi
 done
 
+git config core.quotepath off
 export BRANCH=`git symbolic-ref --short HEAD`
 export A=`git status -s -u | head -30`
 export SIZE=0
