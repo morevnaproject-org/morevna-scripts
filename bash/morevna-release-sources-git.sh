@@ -52,7 +52,7 @@ if [ ! -d "$GITDIR" ]; then
 	if ! ( git rev-parse HEAD >/dev/null 2>&1 ); then
 		git checkout -b main
 	else
-		git branch --set-upstream-to=origin/main main
+		git branch --set-upstream-to=origin/main main || true
 	fi
 	git lfs install
 else
@@ -206,9 +206,15 @@ export SIZE_LIMIT=50000000 # ~50M
 while [ ! -z "$A" ]; do
 	while IFS= read -r line; do
 		FILENAME="${line:3}"
+		if [ "${FILENAME:0:1}" == '"' ]; then
+			FILENAME="${FILENAME:1:-1}"
+		fi
 		git add "$FILENAME"
-		FILESIZE=$(stat -c%s "$FILENAME")
-		SIZE=`expr $SIZE + $FILESIZE`
+		if [ -e "$FILENAME" ]; then
+			FILESIZE=$(stat -c%s "$FILENAME")
+			SIZE=`expr $SIZE + $FILESIZE`
+		fi
+		
 		if [ $SIZE -gt $SIZE_LIMIT ]; then
 			SIZE=0
 			break
