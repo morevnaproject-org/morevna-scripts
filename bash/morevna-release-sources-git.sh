@@ -139,10 +139,12 @@ if [ ! -f "$DIR/.gitattributes" ] && [ ! -f "$GITDIR/.gitattributes" ]; then
 cat <<EOT > "$DIR/.gitattributes"
 *.kra filter=lfs diff=lfs merge=lfs -text
 *.png filter=lfs diff=lfs merge=lfs -text
+*.jpg filter=lfs diff=lfs merge=lfs -text
 *.sifz filter=lfs diff=lfs merge=lfs -text
 *.blend filter=lfs diff=lfs merge=lfs -text
 *.wav filter=lfs diff=lfs merge=lfs -text
 *.mp3 filter=lfs diff=lfs merge=lfs -text
+*.mp4 filter=lfs diff=lfs merge=lfs -text
 *.ogg filter=lfs diff=lfs merge=lfs -text
 *.mov filter=lfs diff=lfs merge=lfs -text
 *.odt filter=lfs diff=lfs merge=lfs -text
