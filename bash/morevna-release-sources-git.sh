@@ -4,6 +4,8 @@ set -e
 
 echo
 
+# HINT: NO_AUTOCOMMIT env var allows skip commiting
+
 write_license()
 {
 	if [ ! -z "$1" ] && [ "$1" == "by" ]; then
@@ -199,37 +201,41 @@ for F in .gitignore .gitattributes CREDITS.txt CONTRIBUTING.md LICENSE README.md
 	fi
 done
 
-git config core.quotepath off
-export BRANCH=`git symbolic-ref --short HEAD`
-export A=`git status -s -u | head -30`
-export SIZE=0
-export SIZE_LIMIT=50000000 # ~50M
-#echo BRANCH=$BRANCH
-while [ ! -z "$A" ]; do
-	while IFS= read -r line; do
-		FILENAME="${line:3}"
-		if [ "${FILENAME:0:1}" == '"' ]; then
-			FILENAME="${FILENAME:1:-1}"
-		fi
-		git add "$FILENAME"
-		if [ -e "$FILENAME" ]; then
-			FILESIZE=$(stat -c%s "$FILENAME")
-			SIZE=`expr $SIZE + $FILESIZE`
-		fi
-		
-		if [ $SIZE -gt $SIZE_LIMIT ]; then
-			SIZE=0
-			break
-		fi
-	done <<< "$A"
-	git commit -m "Update files"
-	git push origin $BRANCH
-	#if [ `git rev-list --count HEAD` -gt 10 ]; then
-	#	exit 0
-	#fi
-	#echo "----"
-	A=`git status -s -u | head -30`
-	sleep 10
-done
+if [ ! -z "${NO_AUTOCOMMIT}" ]; then
+	git gui
+else
+	git config core.quotepath off
+	export BRANCH=`git symbolic-ref --short HEAD`
+	export A=`git status -s -u | head -30`
+	export SIZE=0
+	export SIZE_LIMIT=50000000 # ~50M
+	#echo BRANCH=$BRANCH
+	while [ ! -z "$A" ]; do
+		while IFS= read -r line; do
+			FILENAME="${line:3}"
+			if [ "${FILENAME:0:1}" == '"' ]; then
+				FILENAME="${FILENAME:1:-1}"
+			fi
+			git add "$FILENAME"
+			if [ -e "$FILENAME" ]; then
+				FILESIZE=$(stat -c%s "$FILENAME")
+				SIZE=`expr $SIZE + $FILESIZE`
+			fi
+			
+			if [ $SIZE -gt $SIZE_LIMIT ]; then
+				SIZE=0
+				break
+			fi
+		done <<< "$A"
+		git commit -m "Update files"
+		git push origin $BRANCH
+		#if [ `git rev-list --count HEAD` -gt 10 ]; then
+		#	exit 0
+		#fi
+		#echo "----"
+		A=`git status -s -u | head -30`
+		sleep 10
+	done
+fi
 
 exit 0
